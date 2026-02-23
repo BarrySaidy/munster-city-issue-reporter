@@ -34,6 +34,13 @@ L.control
   )
   .addTo(map);
 
+// Helper function to get color based on severity
+function getSeverityColor(severity) {
+  if (severity >= 4) return "#d32f2f"; // Red for severe (4-5)
+  if (severity >= 2) return "#f57c00"; // Orange/Yellow for moderate (2-3)
+  return "#388e3c"; // Green for minor (1)
+}
+
 // 4) WFS URL (your GeoServer layer)
 var wfsUrl =
   "http://localhost:8080/geoserver/cityfix/wfs" +
@@ -53,13 +60,18 @@ fetch(wfsUrl)
     console.log("Loaded WFS features:", data.features ? data.features.length : 0);
 
     var issuesLayer = L.geoJSON(data, {
-      // Make points very visible
+      // Color-code by severity
       pointToLayer: function (feature, latlng) {
+        var severity = feature.properties.severity || 1;
+        var color = getSeverityColor(severity);
+        
         return L.circleMarker(latlng, {
           radius: 10,
           weight: 2,
           opacity: 1,
           fillOpacity: 0.85,
+          color: "#333",
+          fillColor: color,
         });
       },
 
@@ -92,6 +104,20 @@ fetch(wfsUrl)
     // Zoom to issues (helps demo)
     var b = issuesLayer.getBounds();
     if (b.isValid()) map.fitBounds(b.pad(0.2));
+
+    // Add legend showing severity color scale
+    var legend = L.control({ position: "bottomright" });
+    legend.onAdd = function () {
+      var div = L.DomUtil.create("div", "legend");
+      div.innerHTML = "<div style='background:white; padding:16px 18px; border-radius:8px; box-shadow:0 2px 12px rgba(0,0,0,0.4); border:2px solid #333; font-family:Arial, sans-serif;'>";
+      div.innerHTML += "<h3 style='margin:0 0 12px 0; font-size:16px; font-weight:bold; color:#333; text-transform:uppercase; letter-spacing:0.5px;'>Issue Severity</h3>";
+      div.innerHTML += "<div style='display:flex; align-items:center; margin-bottom:10px; font-size:14px;'><span style='width:20px; height:20px; background:#388e3c; border-radius:50%; margin-right:10px; border:2px solid #2e7d32;'></span><span style='font-weight:500;'>Minor (1)</span></div>";
+      div.innerHTML += "<div style='display:flex; align-items:center; margin-bottom:10px; font-size:14px;'><span style='width:20px; height:20px; background:#f57c00; border-radius:50%; margin-right:10px; border:2px solid #e65100;'></span><span style='font-weight:500;'>Moderate (2-3)</span></div>";
+      div.innerHTML += "<div style='display:flex; align-items:center; font-size:14px;'><span style='width:20px; height:20px; background:#d32f2f; border-radius:50%; margin-right:10px; border:2px solid #b71c1c;'></span><span style='font-weight:500;'>Severe (4-5)</span></div>";
+      div.innerHTML += "</div>";
+      return div;
+    };
+    legend.addTo(map);
   })
   .catch(function (err) {
     console.error(err);
