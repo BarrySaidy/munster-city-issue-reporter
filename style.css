@@ -1,3 +1,13 @@
 #map {
     height: 100vh;
 }
+
+/* on narrow viewports move the legend to the lower left
+   so it never bumps the top‑right filter panel */
+@media (max-width: 600px) {
+    .legend {
+        right: auto !important;
+        left: 10px !important;
+        bottom: 10px !important;
+    }
+}

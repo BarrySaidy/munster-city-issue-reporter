@@ -277,7 +277,7 @@ fetch(wfsUrl)
     }
 
     // Add legend showing severity color scale
-    var legend = L.control({ position: "bottomright" });
+    var legend = L.control({ position: "bottomleft" });
     legend.onAdd = function () {
       var div = L.DomUtil.create("div", "legend");
       
